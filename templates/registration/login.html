@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Sign in — TODOMU{% endblock %}
+{% block auth_content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height:100vh; background:#12261e;">
+  <div class="card p-4 shadow" style="width: 360px; border-radius: 14px;">
+    <div class="text-center mb-3">
+      <div class="brand-icon mx-auto mb-2" style="background:#f3b13c;color:#12261e;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;">
+        <i class="bi bi-shield-check"></i>
+      </div>
+      <h5 class="fw-bold mb-0">TODOMU OSH Platform</h5>
+      <div class="text-muted small">Sign in to your compliance portal</div>
+    </div>
+    {% if form.errors %}
+      <div class="alert alert-danger py-2 small">Invalid username or password.</div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label small">Username</label>
+        <input type="text" name="username" class="form-control" required autofocus>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small">Password</label>
+        <input type="password" name="password" class="form-control" required>
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn w-100" style="background:#1f7a4d;color:#fff;">Sign in</button>
+    </form>
+    <div class="text-center mt-3">
+      <a href="{% url 'password_reset' %}" class="small text-muted">Forgot your password?</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

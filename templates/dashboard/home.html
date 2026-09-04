@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <div class="text-muted small text-uppercase" style="letter-spacing:.06em;">Safety command centre</div>
+    <h3 class="fw-bold mb-1">Good morning, {{ user.first_name|default:user.username|upper }}</h3>
+    <div class="text-muted small">
+      {% if org %}{{ org.name }} — {% else %}All sites — {% endif %}
+      Your OSHA 2007 compliance position, live from the field, with DOSHS submissions one click away.
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'incidents:add' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-exclamation-triangle me-1"></i>Report incident</a>
+    <a href="{% url 'doshs:generate_pack' %}" class="btn btn-sm text-white" style="background:#1f7a4d;"><i class="bi bi-file-earmark-arrow-down me-1"></i>Generate DOSHS pack</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Compliance score</div>
+      <div class="kpi-value" style="color:#b8860b;">{% if compliance_score is not None %}{{ compliance_score }}%{% else %}—{% endif %}</div>
+      <div class="kpi-sub">Statutory duties evidenced</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Open incidents</div>
+      <div class="kpi-value">{{ open_incidents_count }}</div>
+      <div class="kpi-sub">{{ open_incidents_awaiting_dosh }} awaiting DOSH filing</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Open CAPAs</div>
+      <div class="kpi-value">{{ open_capas_count }}</div>
+      <div class="kpi-sub">{{ overdue_capas_count }} overdue</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Days since LTI</div>
+      <div class="kpi-value">{% if days_since_lti is not None %}{{ days_since_lti }}{% else %}—{% endif %}</div>
+      <div class="kpi-sub">Lost-time injury free streak</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3"><a class="quick-action" href="{% url 'incidents:add' %}"><i class="bi bi-exclamation-triangle"></i> Report incident</a></div>
+  <div class="col-md-3"><a class="quick-action" href="{% url 'risk:add' %}"><i class="bi bi-shield-plus"></i> New risk assessment</a></div>
+  <div class="col-md-3"><a class="quick-action" href="{% url 'toolbox:add' %}"><i class="bi bi-chat-square-text"></i> Toolbox talk</a></div>
+  <div class="col-md-3"><a class="quick-action" href="{% url 'doshs:generate_pack' %}"><i class="bi bi-file-earmark-text"></i> DOSHS pack</a></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-7">
+    <div class="panel-card h-100">
+      <div class="section-title">Incident &amp; near-miss trend</div>
+      <div class="section-sub mb-2">Last 6 months</div>
+      <canvas id="trendChart" height="140"></canvas>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="panel-card h-100">
+      <div class="section-title">Compliance by site</div>
+      <div class="section-sub mb-2">Evidence completeness</div>
+      <canvas id="siteChart" height="140"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-12">
+    <div class="panel-card">
+      <div class="section-title">Fire equipment &amp; risk assessments</div>
+      <div class="section-sub mb-2">Attention required</div>
+      <div class="row">
+        <div class="col-md-6 d-flex justify-content-between align-items-center py-2">
+          <span><i class="bi bi-fire text-danger me-2"></i>Overdue fire equipment service</span>
+          <span class="fw-bold">{{ overdue_fire_equipment.count }}</span>
+        </div>
+        <div class="col-md-6 d-flex justify-content-between align-items-center py-2">
+          <span><i class="bi bi-clipboard-data text-warning me-2"></i>Risk assessments due for review</span>
+          <span class="fw-bold">{{ risk_assessments_due }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="panel-card h-100">
+      <div class="d-flex justify-content-between">
+        <div class="section-title">Statutory deadlines</div>
+        <a href="{% url 'doshs:list' %}" class="small text-decoration-none">View calendar</a>
+      </div>
+      <div class="section-sub mb-2">Automated reminders sent to owners by email and SMS</div>
+      {% for d in due_soon_deadlines %}
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <div class="fw-semibold small">{{ d.title }}</div>
+          <div class="text-muted" style="font-size:11px;">{{ d.statutory_reference }}</div>
+        </div>
+        <span class="status-pill status-{{ d.computed_status }}">{{ d.get_status_display }}</span>
+      </div>
+      {% empty %}
+      <div class="text-muted small py-3">No upcoming statutory deadlines.</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="panel-card h-100">
+      <div class="section-title">Attention required</div>
+      <div class="section-sub mb-2">Items that would fail a DOSHS inspection today</div>
+      {% for eq in overdue_fire_equipment %}
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <div class="fw-semibold small">{{ eq.get_kind_display }} past service date</div>
+          <div class="text-muted" style="font-size:11px;">{{ eq.tag_number }}</div>
+        </div>
+        <a href="{% url 'fire:edit' eq.pk %}" class="small">Fix →</a>
+      </div>
+      {% empty %}
+      <div class="text-muted small py-3">Nothing overdue right now.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ctx = document.getElementById('trendChart');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{ month_labels|safe }},
+    datasets: [
+      { label: 'Near misses', data: {{ near_miss_series|safe }}, borderColor: '#1f7a4d', backgroundColor: 'rgba(31,122,77,0.1)', tension: 0.35 },
+      { label: 'Injuries', data: {{ injury_series|safe }}, borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,0.08)', tension: 0.35 }
+    ]
+  },
+  options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+});
+
+const siteCtx = document.getElementById('siteChart');
+new Chart(siteCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ site_labels|safe }},
+    datasets: [{ label: 'Evidence completeness %', data: {{ site_scores|safe }}, backgroundColor: '#1f7a4d', borderRadius: 4 }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+});
+</script>
+{% endblock %}

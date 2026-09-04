@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel-card" style="max-width: 480px;">
+  <h5 class="fw-bold">Delete "{{ object }}"?</h5>
+  <p class="text-muted small">This permanently removes the company and ALL of its compliance records (incidents, CAPAs, reports, etc). This cannot be undone.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete permanently</button>
+    <a href="{% url 'organizations:list' %}" class="btn btn-outline-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

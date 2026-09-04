@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="fw-bold mb-3">{% if object %}Edit {{ object.name }}{% else %}Add Company{% endif %}</h4>
+
+<div class="row g-3">
+  <div class="col-md-{% if object %}7{% else %}12{% endif %}">
+    <div class="panel-card" style="max-width: 640px;">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors }}</div>{% endif %}
+            {% if field.help_text %}<div class="text-muted small mt-1">{{ field.help_text }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn text-white" style="background:#1f7a4d;">Save</button>
+        <a href="{% url 'organizations:list' %}" class="btn btn-outline-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+
+  {% if object %}
+  <div class="col-md-5">
+    <div class="panel-card">
+      <div class="section-title mb-2">Sites / Branches</div>
+      {% for site in sites %}
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <span class="small">{{ site.name }} <span class="text-muted">{{ site.address }}</span></span>
+        <form method="post" action="{% url 'organizations:site_delete' object.pk site.pk %}">
+          {% csrf_token %}
+          <button class="btn btn-link btn-sm text-danger p-0">Remove</button>
+        </form>
+      </div>
+      {% empty %}
+      <div class="text-muted small py-2">No sites added yet.</div>
+      {% endfor %}
+      <form method="post" action="{% url 'organizations:site_add' object.pk %}" class="mt-3">
+        {% csrf_token %}
+        <div class="input-group input-group-sm">
+          {{ site_form.name }}
+          <button class="btn btn-outline-secondary">Add site</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0">Compliance Calendar</h4>
+  <a href="{% url 'doshs:list' %}" class="btn btn-sm btn-outline-secondary">DOSHS reports</a>
+</div>
+
+{% for month, deadlines in grouped.items %}
+<div class="panel-card mb-3">
+  <div class="section-title mb-2">{{ month }}</div>
+  <table class="table table-simple mb-0">
+    <thead><tr><th>Title</th><th>Reference</th><th>Due date</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for d in deadlines %}
+      <tr>
+        <td>{{ d.title }}{% if request.is_all_sites %} <span class="text-muted small">({{ d.organization.name }})</span>{% endif %}</td>
+        <td class="text-muted small">{{ d.statutory_reference }}</td>
+        <td>{{ d.due_date }}</td>
+        <td><span class="status-pill status-{{ d.computed_status }}">{{ d.get_status_display }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% empty %}
+<div class="panel-card text-muted text-center py-4">No statutory deadlines on record.</div>
+{% endfor %}
+{% endblock %}

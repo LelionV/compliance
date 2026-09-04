@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0">Select a company to audit</h4>
+  <a href="{% url 'organizations:add' %}" class="btn btn-sm text-white" style="background:#1f7a4d;"><i class="bi bi-building-add me-1"></i>Add company</a>
+</div>
+<div class="row g-3">
+  {% for org in organizations %}
+  <div class="col-md-4">
+    <div class="panel-card h-100">
+      <div class="fw-semibold">{{ org.name }}</div>
+      <div class="text-muted small mb-2">{{ org.dosh_reg_no }}</div>
+      <div class="small text-muted mb-3">{{ org.industry }} · {{ org.seats }} seats</div>
+      <form method="post" action="{% url 'dashboard:switch_org' %}">
+        {% csrf_token %}
+        <input type="hidden" name="organization_id" value="{{ org.pk }}">
+        <button class="btn btn-sm w-100" style="background:#1f7a4d;color:#fff;">Open portal</button>
+      </form>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">No organizations yet. Add one in the <a href="/admin/organizations/organization/add/">admin</a>.</p>
+  {% endfor %}
+  <div class="col-md-4">
+    <div class="panel-card h-100 d-flex flex-column justify-content-center align-items-center">
+      <form method="post" action="{% url 'dashboard:switch_org' %}">
+        {% csrf_token %}
+        <input type="hidden" name="organization_id" value="ALL">
+        <button class="btn btn-sm btn-outline-secondary">View all sites</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

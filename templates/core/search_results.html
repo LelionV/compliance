@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="fw-bold mb-3">Search results for "{{ query }}"</h4>
+
+{% if not query %}
+  <p class="text-muted">Type something in the search bar above.</p>
+{% elif not results %}
+  <div class="panel-card text-muted text-center py-4">No matches found across incidents, JSAs, employees, or DOSHS records.</div>
+{% else %}
+  {% for group, items in results.items %}
+  <div class="panel-card mb-3">
+    <div class="section-title mb-2">{{ group }}</div>
+    {% for obj, url_name in items %}
+    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+      <span class="small">{{ obj }}</span>
+      {% if url_name %}<a href="{% url url_name obj.pk %}" class="small">Open →</a>
+      {% else %}<a href="{% url 'doshs:calendar' %}" class="small">View in calendar →</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0">Client Companies</h4>
+  <a href="{% url 'organizations:add' %}" class="btn btn-sm text-white" style="background:#1f7a4d;"><i class="bi bi-building-add me-1"></i>Add company</a>
+</div>
+
+<div class="row g-3">
+  {% for org in organizations %}
+  <div class="col-md-4">
+    <div class="panel-card h-100 d-flex flex-column">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="fw-semibold">{{ org.name }}</div>
+          <div class="text-muted small">{{ org.dosh_reg_no|default:"No DOSH reg. number" }}</div>
+        </div>
+        {% if org.is_active %}<span class="status-pill status-closed">Active</span>{% else %}<span class="status-pill status-overdue">Inactive</span>{% endif %}
+      </div>
+      <div class="small text-muted my-2">{{ org.industry|default:"—" }} · {{ org.seats }} seats · {{ org.sites.count }} site{{ org.sites.count|pluralize }}</div>
+      <div class="mt-auto d-flex gap-2 pt-2">
+        <form method="post" action="{% url 'dashboard:switch_org' %}" class="flex-fill">
+          {% csrf_token %}
+          <input type="hidden" name="organization_id" value="{{ org.pk }}">
+          <button class="btn btn-sm w-100 text-white" style="background:#1f7a4d;">Open portal</button>
+        </form>
+        <a href="{% url 'organizations:edit' org.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">No companies yet. Click "Add company" to onboard your first client.</p>
+  {% endfor %}
+</div>
+{% endblock %}
